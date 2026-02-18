@@ -61,24 +61,30 @@ print("✅ Sesión iniciada correctamente")
 
 
 def find_in_iframes(selector, timeout=60):
-    start = time.time()
-    while time.time() - start < timeout:
+    end_time = time.time() + timeout
+
+    while time.time() < end_time:
         driver.switch_to.default_content()
+
         iframes = driver.find_elements(By.TAG_NAME, "iframe")
 
         for iframe in iframes:
             try:
                 driver.switch_to.frame(iframe)
                 elements = driver.find_elements(By.CSS_SELECTOR, selector)
-                if elements:
-                    return elements[0]
+
+                for el in elements:
+                    if el.is_displayed():
+                        return el
+
                 driver.switch_to.default_content()
             except Exception:
                 driver.switch_to.default_content()
 
-        time.sleep(1)
+        time.sleep(2)
 
     return None
+
 
 
 
