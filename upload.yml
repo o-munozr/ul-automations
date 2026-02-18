@@ -23,6 +23,6 @@ jobs:
       
       - name: Run script
         env:
-          FRESHWORKS_EMAIL: ${{ secrets.FRESHWORKS_EMAIL }}
-          FRESHWORKS_PASSWORD: ${{ secrets.FRESHWORKS_PASSWORD }}
+          FRESHWORKS_COOKIES: ${{ secrets.FRESHWORKS_COOKIES }}
         run: python script.py
+
