@@ -1,1 +1,28 @@
-.github/workflows/upload.yml
+name: Freshworks Upload
+
+on:
+  workflow_dispatch:   # Lo ejecutas manualmente
+  schedule:
+    - cron: '0 12 * * *'  # Opcional: diario a las 12 UTC
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run script
+        env:
+          FRESHWORKS_EMAIL: ${{ secrets.FRESHWORKS_EMAIL }}
+          FRESHWORKS_PASSWORD: ${{ secrets.FRESHWORKS_PASSWORD }}
+        run: python script.py
