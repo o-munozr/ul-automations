@@ -163,15 +163,31 @@ time.sleep(5)
 
 print("Buscando input file...")
 
-file_input = find_in_iframes(
-    "input[data-testid='listAction-file--input']",
-    timeout=60
-)
+file_input = None
+end_time = time.time() + 60
+
+while time.time() < end_time:
+    driver.switch_to.default_content()
+
+    # 1. Buscar en DOM principal
+    elements = driver.find_elements(
+        By.CSS_SELECTOR,
+        "input[data-testid='listAction-file--input']"
+    )
+    if elements:
+        file_input = elements[0]
+        break
+
+    # 2. Buscar en iframes
+    file_input = find_in_iframes(
+        "input[data-testid='listAction-file--input']",
+        timeout=5
+    )
+    if file_input:
+        break
+
+    time.sleep(2)
 
 if not file_input:
     raise Exception("File input not found")
-
-file_input.send_keys(FILE_PATH)
-
-print("File uploaded")
 
