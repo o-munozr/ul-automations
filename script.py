@@ -2,14 +2,17 @@ import os
 import json
 import base64
 import time
+import pickle
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
+
+# =========================
+# CONFIG
+# =========================
 
 BASE_URL = "https://ulsolutions-org.myfreshworks.com/"
 TARGET_URL = "https://ulsolutions-org.myfreshworks.com/crm/messaging/a/912274472090811/bots/bot-builder/freddy-ai-bot/6865/configure/knowledge-sources/files"
@@ -17,6 +20,9 @@ TARGET_URL = "https://ulsolutions-org.myfreshworks.com/crm/messaging/a/912274472
 FILE_NAME = "file_mr9p2rfn49_WERCS_All_Articles.pdf"
 FILE_PATH = os.path.abspath(FILE_NAME)
 
+# =========================
+# COOKIES DESDE SECRET
+# =========================
 
 cookies_base64 = os.getenv("FRESHWORKS_COOKIES")
 
@@ -26,6 +32,9 @@ if not cookies_base64:
 decoded = base64.b64decode(cookies_base64).decode()
 cookies = json.loads(decoded)
 
+# =========================
+# DRIVER HEADLESS
+# =========================
 
 options = Options()
 options.add_argument("--headless=new")
@@ -36,60 +45,72 @@ options.add_argument("--window-size=1920,1080")
 driver = webdriver.Chrome(options=options)
 wait = WebDriverWait(driver, 60)
 
-
-
 driver.get(BASE_URL)
-wait.until(lambda d: d.execute_script("return document.readyState") == "complete")
+
+wait.until(
+    lambda d: d.execute_script("return document.readyState") == "complete"
+)
+
+# =========================
+# LOGIN VIA COOKIES
+# =========================
 
 for cookie in cookies:
     cookie.pop("sameSite", None)
     try:
         driver.add_cookie(cookie)
-    except Exception as e:
-        print("Cookie error:", e)
+    except Exception:
+        pass
 
 driver.get(TARGET_URL)
 
-wait.until(lambda d: d.execute_script("return document.readyState") == "complete")
+wait.until(
+    lambda d: d.execute_script("return document.readyState") == "complete"
+)
 
-# Validar sesión
-if "login" in driver.current_url.lower():
-    raise Exception("Sesión inválida - redirigido a login")
+print("Esperando iframes...")
 
-print("✅ Sesión iniciada correctamente")
+wait.until(
+    lambda d: len(d.find_elements(By.TAG_NAME, "iframe")) > 0
+)
 
+print("Iframes detectados:", len(driver.find_elements(By.TAG_NAME, "iframe")))
+time.sleep(5)
 
+# =========================
+# HELPER: FIND IN IFRAMES
+# =========================
 
 def find_in_iframes(selector, timeout=60):
-    end_time = time.time() + timeout
-
-    while time.time() < end_time:
+    start = time.time()
+    while time.time() - start < timeout:
         driver.switch_to.default_content()
-
         iframes = driver.find_elements(By.TAG_NAME, "iframe")
+
+        if iframes:
+            print("Buscando en", len(iframes), "iframes")
 
         for iframe in iframes:
             try:
                 driver.switch_to.frame(iframe)
                 elements = driver.find_elements(By.CSS_SELECTOR, selector)
-
-                for el in elements:
-                    if el.is_displayed():
-                        return el
-
+                if elements:
+                    return elements[0]
                 driver.switch_to.default_content()
             except Exception:
                 driver.switch_to.default_content()
 
         time.sleep(2)
-
     return None
 
+# =========================
+# CLICK ADD FILES
+# =========================
 
-
+print("Buscando botón Add files...")
 
 add_files_button = find_in_iframes(
-    "button[data-testid='upload-source-button']",
+    "button[data-testid='redirect-upload--button']",
     timeout=60
 )
 
@@ -99,9 +120,15 @@ if not add_files_button:
 driver.execute_script("arguments[0].click();", add_files_button)
 driver.switch_to.default_content()
 
-print("📁 Add files button clicked")
+print("Add files button clicked")
 
+time.sleep(3)
 
+# =========================
+# CLICK UPLOAD FILE
+# =========================
+
+print("Buscando botón Upload File...")
 
 upload_file_button = find_in_iframes(
     "button",
@@ -114,8 +141,15 @@ if not upload_file_button:
 driver.execute_script("arguments[0].click();", upload_file_button)
 driver.switch_to.default_content()
 
-print("⬆ Upload File button clicked")
+print("Upload File button clicked")
 
+time.sleep(3)
+
+# =========================
+# SEND FILE
+# =========================
+
+print("Buscando input file...")
 
 file_input = find_in_iframes(
     "input[type='file']",
@@ -127,12 +161,7 @@ if not file_input:
 
 file_input.send_keys(FILE_PATH)
 
-print("✅ Archivo enviado:", FILE_PATH)
-
-
+print("File uploaded")
 
 time.sleep(20)
-
-print("🎉 Proceso terminado correctamente")
-
 driver.quit()
