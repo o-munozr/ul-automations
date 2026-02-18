@@ -189,5 +189,10 @@ while time.time() < end_time:
     time.sleep(2)
 
 if not file_input:
-    raise Exception("File input not found")
+    print("Input no encontrado, guardando screenshot...")
+    driver.save_screenshot("debug.png")
 
+    with open("debug.html", "w", encoding="utf-8") as f:
+        f.write(driver.page_source)
+
+    raise Exception("File input not found")
