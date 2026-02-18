@@ -82,26 +82,37 @@ time.sleep(5)
 # HELPER: FIND IN IFRAMES
 # =========================
 
+def find_element_recursive(selector, context):
+    elements = context.find_elements(By.CSS_SELECTOR, selector)
+    if elements:
+        return elements[0]
+
+    iframes = context.find_elements(By.TAG_NAME, "iframe")
+
+    for iframe in iframes:
+        try:
+            driver.switch_to.frame(iframe)
+            found = find_element_recursive(selector, driver)
+            if found:
+                return found
+            driver.switch_to.parent_frame()
+        except:
+            driver.switch_to.parent_frame()
+
+    return None
+
+
 def find_in_iframes(selector, timeout=60):
-    start = time.time()
-    while time.time() - start < timeout:
+    end_time = time.time() + timeout
+
+    while time.time() < end_time:
         driver.switch_to.default_content()
-        iframes = driver.find_elements(By.TAG_NAME, "iframe")
-
-        if iframes:
-            print("Buscando en", len(iframes), "iframes")
-
-        for iframe in iframes:
-            try:
-                driver.switch_to.frame(iframe)
-                elements = driver.find_elements(By.CSS_SELECTOR, selector)
-                if elements:
-                    return elements[0]
-                driver.switch_to.default_content()
-            except Exception:
-                driver.switch_to.default_content()
-
+        print("Buscando input en estructura completa de iframes...")
+        found = find_element_recursive(selector, driver)
+        if found:
+            return found
         time.sleep(2)
+
     return None
 
 # =========================
