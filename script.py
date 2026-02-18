@@ -144,7 +144,7 @@ driver.switch_to.default_content()
 
 print("Upload File button clicked")
 
-time.sleep(3)
+time.sleep(5)
 
 # =========================
 # SEND FILE
@@ -153,7 +153,7 @@ time.sleep(3)
 print("Buscando input file...")
 
 file_input = find_in_iframes(
-    "input[type='file']",
+    "input[data-testid='listAction-file--input']",
     timeout=60
 )
 
@@ -164,5 +164,3 @@ file_input.send_keys(FILE_PATH)
 
 print("File uploaded")
 
-time.sleep(20)
-driver.quit()
