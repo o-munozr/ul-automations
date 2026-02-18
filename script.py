@@ -1,15 +1,15 @@
 import os
 import json
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+import base64
 
-BASE_URL = "https://ulsolutions-org.myfreshworks.com/"
-TARGET_URL = "https://ulsolutions-org.myfreshworks.com/crm/messaging/a/912274472090811/bots/bot-builder/freddy-ai-bot/6865/configure/knowledge-sources/files"
+cookies_base64 = os.getenv("FRESHWORKS_COOKIES")
 
-cookies_json = os.getenv("FRESHWORKS_COOKIES")
-cookies = json.loads(cookies_json)
+if not cookies_base64:
+    raise Exception("FRESHWORKS_COOKIES not found")
+
+decoded = base64.b64decode(cookies_base64).decode()
+cookies = json.loads(decoded)
+
 
 options = Options()
 options.add_argument("--headless=new")
