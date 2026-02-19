@@ -25,3 +25,8 @@ jobs:
         env:
           FRESHWORKS_COOKIES: ${{ secrets.FRESHWORKS_COOKIES }}
         run: python script.py
+        
+      - name: Check Chrome version
+        run: |
+          which google-chrome || true
+          google-chrome --version || true
