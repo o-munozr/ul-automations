@@ -65,6 +65,13 @@ for cookie in cookies:
 
 driver.get(TARGET_URL)
 
+print("URL actual después de cargar TARGET:", driver.current_url)
+
+if "login" in driver.current_url.lower():
+    driver.save_screenshot("not_logged.png")
+    raise Exception("No autenticado - redirigido a login")
+
+
 wait.until(lambda d: d.execute_script("return document.readyState") == "complete")
 
 print("Página cargada")
