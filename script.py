@@ -49,6 +49,9 @@ options.add_argument("--remote-debugging-port=9222")
 
 driver = webdriver.Chrome(options=options)
 
+wait = WebDriverWait(driver, 60)
+
+
 wait.until(
     lambda d: d.execute_script("return document.readyState") == "complete"
 )
