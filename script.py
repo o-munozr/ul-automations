@@ -48,6 +48,10 @@ options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
 
+
+
+driver = webdriver.Chrome(options=options)
+
 driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
   "source": """
     Object.defineProperty(navigator, 'webdriver', {
@@ -56,7 +60,6 @@ driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
   """
 })
 
-driver = webdriver.Chrome(options=options)
 wait = WebDriverWait(driver, 120)
 
 # Anti detection básico
