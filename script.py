@@ -34,39 +34,36 @@ decoded = base64.b64decode(cookies_base64).decode()
 cookies = json.loads(decoded)
 
 # =========================
-# DRIVER HEADLESS (ROBUSTO)
+# DRIVER HEADLESS (GITHUB)
 # =========================
 
 options = Options()
 options.add_argument("--headless=new")
-options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--window-size=1920,1080")
-options.add_argument("--disable-blink-features=AutomationControlled")
 
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option("useAutomationExtension", False)
+# Muy importante si instalaste chrome vía apt
+options.binary_location = "/usr/bin/google-chrome"
 
-
-
-driver = webdriver.Chrome(options=options)
-
-driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-  "source": """
-    Object.defineProperty(navigator, 'webdriver', {
-      get: () => undefined
-    })
-  """
-})
-
-wait = WebDriverWait(driver, 120)
-
-# Anti detection básico
-driver.execute_script(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+driver = webdriver.Chrome(
+    service=Service(),
+    options=options
 )
 
+# Anti-detection antes de cargar páginas
+driver.execute_cdp_cmd(
+    "Page.addScriptToEvaluateOnNewDocument",
+    {
+        "source": """
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+        })
+        """
+    }
+)
+
+wait = WebDriverWait(driver, 120)
 # =========================
 # LOAD BASE
 # =========================
