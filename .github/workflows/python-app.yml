@@ -37,3 +37,11 @@ jobs:
             debug.png
             debug.html
 
+      - name: Install Google Chrome
+        run: |
+          sudo apt update
+          sudo apt install -y google-chrome-stable
+
+          
+            
+
